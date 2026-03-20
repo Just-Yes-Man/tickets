@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Escritorio</title>
+
+<style>
+
+body{
+font-family:Arial;
+padding:40px;
+background:#f2f2f2;
+}
+
+h1{
+margin-bottom:30px;
+}
+
+.container{
+display:flex;
+justify-content:space-between;
+}
+
+button{
+padding:10px 20px;
+background:#1976d2;
+color:white;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1 id="titulo">Desk</h1>
+
+<div class="container">
+
+<div>
+<p>Atendiendo a <b id="ticket">Nadie</b></p>
+
+<button id="btnAtender">
+Atender siguiente ticket
+</button>
+</div>
+
+<div>
+<p>En cola</p>
+<h2 id="pendientes">0</h2>
+</div>
+
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="js/escritorio.js"></script>
+
+</body>
+
+</html>
