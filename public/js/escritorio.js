@@ -21,7 +21,8 @@ btn.addEventListener('click', () => {
   const item = res.revision;
   revision.innerText = [
    `Paso: ${item.idPaso}`,
-   `Modelo: ${item.modelo.tipo}`,
+   `Modelo ideal: ${item.modelo.tipo}`,
+   `QR medido: ${item.modelo.qrMedido}`,
    `Monitor: ${item.monitor.nombre}`,
    `Canal: ${item.canal}`,
    `Resultado: ${item.aprobado ? 'Aprobado' : 'Rechazado'}`,

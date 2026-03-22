@@ -32,7 +32,33 @@ class BandaControl {
   return rows;
  }
 
- async registrarPasoProducto({ qr, peso, color, altura, canal = '1' }) {
+ async obtenerModeloIdeal(modeloReferencia) {
+  if (modeloReferencia) {
+   const query = `
+    SELECT id, tipo, qr, peso_esperado, color_esperado, altura_esperada
+    FROM modelos_producto
+    WHERE activo = true AND (tipo = $1 OR qr = $1)
+    ORDER BY id ASC
+    LIMIT 1;
+   `;
+
+   const { rows } = await pool.query(query, [modeloReferencia]);
+   return rows[0] || null;
+  }
+
+  const query = `
+   SELECT id, tipo, qr, peso_esperado, color_esperado, altura_esperada
+   FROM modelos_producto
+   WHERE activo = true
+   ORDER BY id ASC
+   LIMIT 1;
+  `;
+
+  const { rows } = await pool.query(query);
+  return rows[0] || null;
+ }
+
+ async registrarPasoProducto({ qr, peso, color, altura, canal = '1', modeloReferencia }) {
   if (!qr || peso === undefined || !color || altura === undefined) {
    return {
     ok: false,
@@ -40,32 +66,24 @@ class BandaControl {
    };
   }
 
-  const query = `
-   SELECT id, tipo, qr, peso_esperado, color_esperado, altura_esperada
-   FROM modelos_producto
-   WHERE qr = $1 AND activo = true
-   LIMIT 1;
-  `;
+  const modelo = await this.obtenerModeloIdeal(modeloReferencia);
 
-  const { rows } = await pool.query(query, [qr]);
-
-  if (!rows.length) {
+  if (!modelo) {
    return {
     ok: false,
-    msg: `No existe un modelo activo para el QR ${qr}`
+    msg: 'No hay modelos activos en modelos_producto para comparar la medición'
    };
   }
 
   this.ultimoPaso += 1;
-
-  const modelo = rows[0];
 
   const paso = new ProductoEnBanda({
    idPaso: this.ultimoPaso,
    modelo: {
     id: modelo.id,
     tipo: modelo.tipo,
-    qr: modelo.qr,
+    qrIdeal: modelo.qr,
+    qrMedido: qr,
     esperado: {
      peso: modelo.peso_esperado,
      color: modelo.color_esperado,

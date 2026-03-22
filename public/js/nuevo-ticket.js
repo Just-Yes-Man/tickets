@@ -1,6 +1,7 @@
 const socket = io();
 
 const qrInput = document.querySelector('#qr');
+const modeloReferenciaInput = document.querySelector('#modeloReferencia');
 const pesoInput = document.querySelector('#peso');
 const colorInput = document.querySelector('#color');
 const alturaInput = document.querySelector('#altura');
@@ -11,6 +12,7 @@ const btnRegistrar = document.querySelector('#btnRegistrar');
 btnRegistrar.addEventListener('click', () => {
  const payload = {
   qr: qrInput.value.trim(),
+  modeloReferencia: modeloReferenciaInput.value.trim() || null,
   peso: Number(pesoInput.value),
   color: colorInput.value.trim(),
   altura: Number(alturaInput.value),
@@ -23,6 +25,6 @@ btnRegistrar.addEventListener('click', () => {
    return;
   }
 
-  resultado.innerText = `✅ Paso #${res.paso.idPaso} registrado para ${res.paso.modelo.tipo}`;
+  resultado.innerText = `✅ Paso #${res.paso.idPaso} registrado. QR medido: ${res.paso.modelo.qrMedido} | Modelo ideal: ${res.paso.modelo.tipo}`;
  });
 });

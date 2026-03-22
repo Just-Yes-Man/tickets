@@ -17,7 +17,7 @@ socket.on('ultimas-revisiones', (revisiones) => {
  const [primero, ...resto] = revisiones;
 
  productoPrincipal.innerText = `Paso #${primero.idPaso} - ${primero.modelo.tipo}`;
- monitorPrincipal.innerText = `Monitor: ${primero.monitor.nombre} (Canal ${primero.monitor.canal})`;
+ monitorPrincipal.innerText = `QR medido: ${primero.modelo.qrMedido} | Monitor: ${primero.monitor.nombre} (Canal ${primero.monitor.canal})`;
  estadoPrincipal.innerText = primero.aprobado ? 'APROBADO' : 'RECHAZADO';
 
  lista.innerHTML = '';
@@ -26,6 +26,7 @@ socket.on('ultimas-revisiones', (revisiones) => {
   lista.innerHTML += `
    <div class="item">
     <strong>Paso #${item.idPaso} - ${item.modelo.tipo}</strong><br>
+    QR medido: ${item.modelo.qrMedido}<br>
     Monitor: ${item.monitor.nombre}<br>
     <span class="badge ${item.aprobado ? 'ok' : 'fail'}">${item.aprobado ? 'Aprobado' : 'Rechazado'}</span>
    </div>
