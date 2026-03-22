@@ -7,6 +7,22 @@ const emitirEstado = (io) => {
  io.emit('ultimas-revisiones', bandaControl.ultimasRevisiones);
 };
 
+const logError = (contexto, error) => {
+ console.error(`[PostgreSQL][${contexto}] ${error.message}`);
+
+ if (error.code) {
+  console.error(`[PostgreSQL][${contexto}] code=${error.code}`);
+ }
+
+ if (error.detail) {
+  console.error(`[PostgreSQL][${contexto}] detail=${error.detail}`);
+ }
+
+ if (error.hint) {
+  console.error(`[PostgreSQL][${contexto}] hint=${error.hint}`);
+ }
+};
+
 const obtenerMonitores = async () => {
  try {
   if (!bandaControl.monitoresActivos.length) {
@@ -18,6 +34,8 @@ const obtenerMonitores = async () => {
    monitores: bandaControl.monitoresActivos
   };
  } catch (error) {
+  logError('obtenerMonitores', error);
+
   return {
    ok: false,
    msg: 'No se pudo conectar a PostgreSQL para leer monitores'
@@ -55,6 +73,8 @@ const socketController = async (socket, io) => {
     emitirEstado(io);
    }
   } catch (error) {
+   logError('registrar-paso-producto', error);
+
    callback({
     ok: false,
     msg: 'No se pudo registrar el paso del producto'
