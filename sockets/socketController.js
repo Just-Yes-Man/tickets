@@ -57,6 +57,19 @@ const socketController = async (socket, io) => {
  socket.emit('pasos-pendientes', bandaControl.pasosPendientes.length);
  socket.emit('ultimas-revisiones', bandaControl.ultimasRevisiones);
 
+ socket.on('crear-modelo-producto', async (payload, callback = () => {}) => {
+  try {
+   const resultado = await bandaControl.crearModeloProducto(payload);
+   callback(resultado);
+  } catch (error) {
+   logError('crear-modelo-producto', error);
+   callback({
+    ok: false,
+    msg: 'No se pudo crear el modelo de producto'
+   });
+  }
+ });
+
  socket.on('registrar-paso-producto', async (payload, callback = () => {}) => {
   try {
    const monitoresActualizados = await obtenerMonitores();

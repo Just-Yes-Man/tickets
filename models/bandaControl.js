@@ -32,6 +32,38 @@ class BandaControl {
   return rows;
  }
 
+
+
+ async crearModeloProducto({ tipo, qr, pesoEsperado, colorEsperado, alturaEsperada }) {
+  if (!tipo || !qr || pesoEsperado === undefined || !colorEsperado || alturaEsperada === undefined) {
+   return {
+    ok: false,
+    msg: 'tipo, qr, pesoEsperado, colorEsperado y alturaEsperada son obligatorios'
+   };
+  }
+
+  const query = `
+   INSERT INTO modelos_producto (tipo, qr, peso_esperado, color_esperado, altura_esperada)
+   VALUES ($1, $2, $3, $4, $5)
+   RETURNING id, tipo, qr, peso_esperado, color_esperado, altura_esperada, activo, created_at;
+  `;
+
+  const params = [tipo, qr, Number(pesoEsperado), colorEsperado, Number(alturaEsperada)];
+
+  try {
+   const { rows } = await pool.query(query, params);
+
+   return {
+    ok: true,
+    modelo: rows[0]
+   };
+  } catch (error) {
+   return {
+    ok: false,
+    msg: `No se pudo crear el modelo ideal: ${error.message}`
+   };
+  }
+ }
  async obtenerModeloIdeal(modeloReferencia) {
   if (modeloReferencia) {
    const query = `
