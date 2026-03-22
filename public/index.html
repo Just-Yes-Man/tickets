@@ -1,49 +1,65 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Sistema de Tickets</title>
+<title>Sistema de Bandas Transportadoras</title>
 
 <style>
-
 body{
 font-family: Arial;
 background:#1e1e2f;
 color:white;
 text-align:center;
-margin-top:100px;
+margin:0;
+padding:80px 20px;
 }
 
-a{
-display:block;
-margin:20px;
+.container{
+max-width:860px;
+margin:0 auto;
+}
+
+h1{
+margin-bottom:10px;
+}
+
+p{
+opacity:.9;
+}
+
+.card{
+margin-top:30px;
+text-align:left;
+background:#2a2a40;
+border-radius:12px;
 padding:20px;
-background:#4CAF50;
-color:white;
-text-decoration:none;
-width:250px;
-margin-left:auto;
-margin-right:auto;
-border-radius:10px;
 }
 
-a:hover{
-background:#45a049;
+code{
+background:#111;
+padding:2px 6px;
+border-radius:5px;
 }
-
 </style>
 
 </head>
 
 <body>
+<div class="container">
+<h1>Sistema de Bandas Transportadoras</h1>
+<p>La plataforma de tickets fue retirada. Esta versión está preparada para operar con tablas de clientes,
+modelos de producto y monitores de proceso.</p>
 
-<h1>Sistema de Tickets</h1>
-
-<a href="nuevo-ticket.html">Nuevo Ticket</a>
-
-<a href="escritorio.html">Escritorio</a>
-
-<a href="publico.html">Pantalla Pública</a>
-
+<div class="card">
+<h2>Esquema de base de datos</h2>
+<p>Ejecuta el script <code>db/schema.sql</code> en PostgreSQL para crear las tablas iniciales:</p>
+<ul>
+<li><code>clientes</code></li>
+<li><code>modelos_producto</code></li>
+<li><code>monitores_proceso</code></li>
+</ul>
+<p>Endpoint de verificación: <code>GET /api/health</code></p>
+</div>
+</div>
 </body>
 
 </html>

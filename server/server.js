@@ -1,8 +1,5 @@
 const express = require('express');
 const http = require('http');
-const socketIO = require('socket.io');
-
-const { socketController } = require('../sockets/socketController');
 
 class Server {
 
@@ -12,27 +9,27 @@ class Server {
   this.port = 1200;
 
   this.server = http.createServer(this.app);
-  this.io = socketIO(this.server);
 
  }
 
  middlewares() {
+  this.app.use(express.json());
   this.app.use(express.static('public'));
  }
 
- sockets() {
-  this.io.on('connection', (socket) => {
-   socketController(socket, this.io);
+ routes() {
+  this.app.get('/api/health', (req, res) => {
+   res.json({ ok: true, servicio: 'bandas-transportadoras' });
   });
  }
 
  listen() {
 
   this.middlewares();
-  this.sockets();
+  this.routes();
 
   this.server.listen(this.port, () => {
-   console.log("Servidor corriendo en puerto", this.port);
+   console.log('Servidor corriendo en puerto', this.port);
   });
 
  }
