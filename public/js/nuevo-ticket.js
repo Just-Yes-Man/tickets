@@ -1,18 +1,28 @@
 const socket = io();
 
-const btn = document.querySelector('#btnCrear');
-const lbl = document.querySelector('#lblNuevoTicket');
+const qrInput = document.querySelector('#qr');
+const pesoInput = document.querySelector('#peso');
+const colorInput = document.querySelector('#color');
+const alturaInput = document.querySelector('#altura');
+const canalInput = document.querySelector('#canal');
+const resultado = document.querySelector('#resultado');
+const btnRegistrar = document.querySelector('#btnRegistrar');
 
-socket.on('connect', () => {
- console.log('conectado');
-});
+btnRegistrar.addEventListener('click', () => {
+ const payload = {
+  qr: qrInput.value.trim(),
+  peso: Number(pesoInput.value),
+  color: colorInput.value.trim(),
+  altura: Number(alturaInput.value),
+  canal: canalInput.value.trim() || '1'
+ };
 
-btn.addEventListener('click', () => {
+ socket.emit('registrar-paso-producto', payload, (res) => {
+  if (!res.ok) {
+   resultado.innerText = `❌ ${res.msg}`;
+   return;
+  }
 
- socket.emit('siguiente-ticket', null, (ticket) => {
-
-  lbl.innerText = ticket;
-
+  resultado.innerText = `✅ Paso #${res.paso.idPaso} registrado para ${res.paso.modelo.tipo}`;
  });
-
 });

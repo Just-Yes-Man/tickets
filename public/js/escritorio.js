@@ -1,33 +1,31 @@
 const socket = io();
 
-const lbl = document.querySelector('#ticket');
-const btn = document.querySelector('#btnAtender');
+const revision = document.querySelector('#revision');
+const btn = document.querySelector('#btnRevisar');
 const pendientes = document.querySelector('#pendientes');
 
-const escritorio = prompt("Número de escritorio");
+const monitorId = prompt('ID del monitor de proceso');
+document.querySelector('#titulo').innerText = `Monitor ${monitorId}`;
 
-document.querySelector('#titulo').innerText = "Desk " + escritorio;
-
-
-// actualizar tickets pendientes
-socket.on('tickets-pendientes', (numero) => {
-
+socket.on('pasos-pendientes', (numero) => {
  pendientes.innerText = numero;
-
 });
 
-
 btn.addEventListener('click', () => {
-
- socket.emit('atender-ticket',{ escritorio }, (ticket) => {
-
-  if(!ticket){
-   lbl.innerText = "Nadie";
+ socket.emit('revisar-siguiente-producto', { monitorId }, (res) => {
+  if (!res.revision) {
+   revision.innerText = 'No hay productos pendientes';
    return;
   }
 
-  lbl.innerText = "Ticket " + ticket.numero;
-
+  const item = res.revision;
+  revision.innerText = [
+   `Paso: ${item.idPaso}`,
+   `Modelo: ${item.modelo.tipo}`,
+   `Monitor: ${item.monitor.nombre}`,
+   `Canal: ${item.canal}`,
+   `Resultado: ${item.aprobado ? 'Aprobado' : 'Rechazado'}`,
+   `Checks: peso=${item.resultado.pesoOk}, color=${item.resultado.colorOk}, altura=${item.resultado.alturaOk}`
+  ].join('\n');
  });
-
 });
