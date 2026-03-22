@@ -1,51 +1,104 @@
-const TicketControl = require('../models/ticketControl');
+const BandaControl = require('../models/bandaControl');
 
-const ticketControl = new TicketControl();
+const bandaControl = new BandaControl();
 
-const socketController = (socket, io) => {
+const emitirEstado = (io) => {
+ io.emit('pasos-pendientes', bandaControl.pasosPendientes.length);
+ io.emit('ultimas-revisiones', bandaControl.ultimasRevisiones);
+};
 
+const logError = (contexto, error) => {
+ console.error(`[PostgreSQL][${contexto}] ${error.message}`);
+
+ if (error.code) {
+  console.error(`[PostgreSQL][${contexto}] code=${error.code}`);
+ }
+
+ if (error.detail) {
+  console.error(`[PostgreSQL][${contexto}] detail=${error.detail}`);
+ }
+
+ if (error.hint) {
+  console.error(`[PostgreSQL][${contexto}] hint=${error.hint}`);
+ }
+};
+
+const obtenerMonitores = async () => {
+ try {
+  if (!bandaControl.monitoresActivos.length) {
+   await bandaControl.inicializarDesdeDB();
+  }
+
+  return {
+   ok: true,
+   monitores: bandaControl.monitoresActivos
+  };
+ } catch (error) {
+  logError('obtenerMonitores', error);
+
+  return {
+   ok: false,
+   msg: 'No se pudo conectar a PostgreSQL para leer monitores'
+  };
+ }
+};
+
+const socketController = async (socket, io) => {
  console.log('Cliente conectado');
 
+ const monitores = await obtenerMonitores();
 
- // tickets pendientes
- socket.emit('tickets-pendientes', ticketControl.tickets.length);
+ if (monitores.ok) {
+  socket.emit('monitores-activos', monitores.monitores);
+ } else {
+  socket.emit('estado-inicial-error', monitores);
+ }
 
- // últimos 4
- socket.emit('ultimos4', ticketControl.ultimos4);
+ socket.emit('pasos-pendientes', bandaControl.pasosPendientes.length);
+ socket.emit('ultimas-revisiones', bandaControl.ultimasRevisiones);
 
+ socket.on('registrar-paso-producto', async (payload, callback = () => {}) => {
+  try {
+   const monitoresActualizados = await obtenerMonitores();
 
- // generar ticket
- socket.on('siguiente-ticket', (payload, callback) => {
+   if (!monitoresActualizados.ok) {
+    return callback(monitoresActualizados);
+   }
 
-  const siguiente = ticketControl.siguiente();
+   const registro = await bandaControl.registrarPasoProducto(payload);
 
-  callback(siguiente);
+   callback(registro);
 
-  io.emit('tickets-pendientes', ticketControl.tickets.length);
+   if (registro.ok) {
+    emitirEstado(io);
+   }
+  } catch (error) {
+   logError('registrar-paso-producto', error);
 
+   callback({
+    ok: false,
+    msg: 'No se pudo registrar el paso del producto'
+   });
+  }
  });
 
-
- // atender ticket
- socket.on('atender-ticket', ({ escritorio }, callback) => {
-
-  if (!escritorio) {
+ socket.on('revisar-siguiente-producto', ({ monitorId } = {}, callback = () => {}) => {
+  if (!monitorId) {
    return callback({
     ok: false,
-    msg: 'El escritorio es obligatorio'
+    msg: 'El monitor es obligatorio'
    });
   }
 
-  const ticket = ticketControl.atenderTicket(escritorio);
+  const revision = bandaControl.revisarSiguienteProducto(monitorId);
 
-  callback(ticket);
+  callback({
+   ok: true,
+   revision
+  });
 
-  io.emit('tickets-pendientes', ticketControl.tickets.length);
-
-  io.emit('ultimos4', ticketControl.ultimos4);
-
+  emitirEstado(io);
  });
-
 };
 
 module.exports = {
