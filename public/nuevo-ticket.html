@@ -1,49 +1,35 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-<title>Nuevo Ticket</title>
-
+<title>Registrar paso de producto</title>
 <style>
-
-body{
-background:#6c4ed6;
-font-family:Arial;
-text-align:center;
-color:white;
-height:100vh;
-display:flex;
-flex-direction:column;
-justify-content:center;
-}
-
-h1{
-font-size:80px;
-}
-
-button{
-padding:15px 30px;
-font-size:18px;
-background:#555;
-color:white;
-border:none;
-border-radius:5px;
-cursor:pointer;
-}
-
+body{background:#6c4ed6;font-family:Arial;color:white;min-height:100vh;display:flex;justify-content:center;align-items:center;}
+.card{background:rgba(0,0,0,.2);padding:30px;border-radius:12px;width:420px;}
+label{display:block;margin-top:10px;margin-bottom:6px;font-weight:600;}
+input{width:100%;padding:10px;border-radius:6px;border:none;}
+button{margin-top:16px;padding:12px 20px;font-size:16px;background:#2f7bff;color:white;border:none;border-radius:6px;cursor:pointer;width:100%;}
+#resultado{margin-top:16px;min-height:32px;}
 </style>
-
 </head>
-
 <body>
-
-<h1 id="lblNuevoTicket">Ticket 0</h1>
-
-<button id="btnCrear">Generar nuevo ticket</button>
-
+<div class="card">
+<h2>Registro de producto en banda</h2>
+<label>QR medido del producto (libre)</label>
+<input id="qr" placeholder="QR-LIBRE-001" />
+<label>Modelo ideal (tipo o QR) - opcional</label>
+<input id="modeloReferencia" placeholder="ej. botella-600ml" />
+<label>Peso detectado</label>
+<input id="peso" type="number" placeholder="150" />
+<label>Color detectado</label>
+<input id="color" placeholder="rojo" />
+<label>Altura detectada</label>
+<input id="altura" type="number" placeholder="80" />
+<label>Canal de banda</label>
+<input id="canal" placeholder="1" value="1" />
+<button id="btnRegistrar">Registrar paso</button>
+<p id="resultado"></p>
+</div>
 <script src="/socket.io/socket.io.js"></script>
 <script src="js/nuevo-ticket.js"></script>
-
 </body>
-
 </html>
