@@ -18,6 +18,26 @@ if (!DATABASE_URL && !hasDiscreteConfig) {
  );
 }
 
+const getSSLConfig = () => {
+ if (PGSSL === 'false') {
+  return false;
+ }
+
+ return {
+  rejectUnauthorized: false
+ };
+};
+
+const normalizeConnectionString = (rawUrl) => {
+ const parsed = new URL(rawUrl);
+
+ if (parsed.searchParams.get('sslmode') === 'require') {
+  parsed.searchParams.set('sslmode', 'no-verify');
+ }
+
+ return parsed.toString();
+};
+
 const pool = hasDiscreteConfig
  ? new Pool({
    host: PGHOST,
@@ -25,11 +45,13 @@ const pool = hasDiscreteConfig
    database: PGDATABASE,
    user: PGUSER,
    password: PGPASSWORD,
-   ssl: PGSSL === 'true' ? { rejectUnauthorized: false } : false
+   ssl: getSSLConfig()
   })
  : new Pool({
-   connectionString: DATABASE_URL,
-   ssl: { rejectUnauthorized: false }
+   connectionString: normalizeConnectionString(DATABASE_URL),
+   ssl: {
+    rejectUnauthorized: false
+   }
   });
 
 pool.on('error', (error) => {
