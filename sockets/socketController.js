@@ -7,58 +7,78 @@ const emitirEstado = (io) => {
  io.emit('ultimas-revisiones', bandaControl.ultimasRevisiones);
 };
 
-const socketController = async (socket, io) => {
- console.log('Cliente conectado');
-
+const obtenerMonitores = async () => {
  try {
-  if (!bandaControl.monitoresActivos) {
+  if (!bandaControl.monitoresActivos.length) {
    await bandaControl.inicializarDesdeDB();
   }
 
-  socket.emit('monitores-activos', bandaControl.monitoresActivos);
-  socket.emit('pasos-pendientes', bandaControl.pasosPendientes.length);
-  socket.emit('ultimas-revisiones', bandaControl.ultimasRevisiones);
-
-  socket.on('registrar-paso-producto', async (payload, callback) => {
-   try {
-    const registro = await bandaControl.registrarPasoProducto(payload);
-
-    callback(registro);
-
-    if (registro.ok) {
-     emitirEstado(io);
-    }
-   } catch (error) {
-    callback({
-     ok: false,
-     msg: 'No se pudo registrar el paso del producto'
-    });
-   }
-  });
-
-  socket.on('revisar-siguiente-producto', ({ monitorId }, callback) => {
-   if (!monitorId) {
-    return callback({
-     ok: false,
-     msg: 'El monitor es obligatorio'
-    });
-   }
-
-   const revision = bandaControl.revisarSiguienteProducto(monitorId);
-
-   callback({
-    ok: true,
-    revision
-   });
-
-   emitirEstado(io);
-  });
+  return {
+   ok: true,
+   monitores: bandaControl.monitoresActivos
+  };
  } catch (error) {
-  socket.emit('estado-inicial-error', {
+  return {
    ok: false,
-   msg: 'No se pudo cargar el estado inicial de la banda'
-  });
+   msg: 'No se pudo conectar a PostgreSQL para leer monitores'
+  };
  }
+};
+
+const socketController = async (socket, io) => {
+ console.log('Cliente conectado');
+
+ const monitores = await obtenerMonitores();
+
+ if (monitores.ok) {
+  socket.emit('monitores-activos', monitores.monitores);
+ } else {
+  socket.emit('estado-inicial-error', monitores);
+ }
+
+ socket.emit('pasos-pendientes', bandaControl.pasosPendientes.length);
+ socket.emit('ultimas-revisiones', bandaControl.ultimasRevisiones);
+
+ socket.on('registrar-paso-producto', async (payload, callback = () => {}) => {
+  try {
+   const monitoresActualizados = await obtenerMonitores();
+
+   if (!monitoresActualizados.ok) {
+    return callback(monitoresActualizados);
+   }
+
+   const registro = await bandaControl.registrarPasoProducto(payload);
+
+   callback(registro);
+
+   if (registro.ok) {
+    emitirEstado(io);
+   }
+  } catch (error) {
+   callback({
+    ok: false,
+    msg: 'No se pudo registrar el paso del producto'
+   });
+  }
+ });
+
+ socket.on('revisar-siguiente-producto', ({ monitorId } = {}, callback = () => {}) => {
+  if (!monitorId) {
+   return callback({
+    ok: false,
+    msg: 'El monitor es obligatorio'
+   });
+  }
+
+  const revision = bandaControl.revisarSiguienteProducto(monitorId);
+
+  callback({
+   ok: true,
+   revision
+  });
+
+  emitirEstado(io);
+ });
 };
 
 module.exports = {

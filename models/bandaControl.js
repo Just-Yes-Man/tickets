@@ -15,6 +15,7 @@ class BandaControl {
   this.pasosPendientes = [];
   this.ultimasRevisiones = [];
   this.ultimoPaso = 0;
+  this.monitoresActivos = [];
  }
 
  async inicializarDesdeDB() {
@@ -28,9 +29,17 @@ class BandaControl {
   const { rows } = await pool.query(query);
 
   this.monitoresActivos = rows;
+  return rows;
  }
 
  async registrarPasoProducto({ qr, peso, color, altura, canal = '1' }) {
+  if (!qr || peso === undefined || !color || altura === undefined) {
+   return {
+    ok: false,
+    msg: 'QR, peso, color y altura son obligatorios'
+   };
+  }
+
   const query = `
    SELECT id, tipo, qr, peso_esperado, color_esperado, altura_esperada
    FROM modelos_producto
